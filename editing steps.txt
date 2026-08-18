@@ -1,0 +1,46 @@
+step 1: convert to correct format in handbrake app
+
+Change it to:
+
+Codec: H.264 (x264)
+Bit depth: 8-bit (automatic when using H.264)
+Resolution:
+either keep 4K (2160×3840)
+OR downscale to 1080×1920 (recommended for Instagram)
+Framerate: Same as source (or 30 fps if you want smaller file)
+
+step 2: some touch ups and edits in davinci resolve
+
+step 2.1: change from portrait to Instagram post mode
+
+1. Change timeline resolution
+
+Go to:
+File → Project Settings → Master Settings
+
+Set:
+
+Timeline Resolution → Custom
+Width: 1080
+Height: 1350
+
+Click Save
+
+2. Fix your dimension in the frame (so you get black bars on sides)
+
+Click your clip → go to Inspector (top right) → video → transofrm
+
+Adjust:
+
+Zoom X and Y: 1.0 → 0.7
+black bars on left/right (this is what you want)
+
+🎥 Export settings (for IG post)
+
+In Deliver tab:
+
+Format: MP4
+Codec: H.264
+Resolution: 1080×1350
+FPS: same as source
+Quality: Restrict to ~10–20 Mbps
