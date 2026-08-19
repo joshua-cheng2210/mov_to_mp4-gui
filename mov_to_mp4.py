@@ -18,8 +18,10 @@ Run:  python mov_to_mp4.py   (or double-click Convert_MOV_to_MP4.bat)
 
 import os
 import re
+import time
 import threading
 import subprocess
+from datetime import datetime
 import tkinter as tk
 from tkinter import filedialog, messagebox, ttk
 from shutil import which
@@ -289,7 +291,7 @@ class App:
 
     def run_batch(self, ffmpeg, rows, workers, threads):
         ok = [0]
-        fail = [0]
+        failed = []
 
         def work(row):
             try:
@@ -301,6 +303,8 @@ class App:
                 self.ui(row.set_status, "Failed", "#d33")
                 self.ui(row.set_progress, 0)
                 self.ui(row.show_error, msg)
+                with self.lock:
+                    failed.append(os.path.basename(row.path))
             finally:
                 with self.lock:
                     self.done_count += 1
@@ -310,6 +314,11 @@ class App:
         with ThreadPoolExecutor(max_workers=workers) as ex:
             for r in rows:
                 ex.submit(work, r)
+
+        print(
+            f"[DEBUG] Batch complete: {ok[0]}/{self.total_count} processed"
+            + (f" | failed ({len(failed)}): {', '.join(failed)}" if failed else " | none failed")
+        )
 
         self.running = False
         self.ui(lambda: self.add_btn.configure(state="normal"))
@@ -332,6 +341,13 @@ class App:
         while os.path.exists(out_path):
             out_path = os.path.join(folder, f"{base}_{counter}.mp4")
             counter += 1
+
+        start_time = time.time()
+        start_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        in_size_mb = os.path.getsize(path) / (1024 * 1024)
+        print(
+            f"[DEBUG :: {start_stamp}] Converting: {os.path.basename(path)} {in_size_mb:.1f} MB"
+        )
 
         self.ui(row.set_status, "Converting", "#2d6cdf")
         self.ui(row.set_progress, 0)
@@ -369,6 +385,13 @@ class App:
         proc.wait()
         if proc.returncode != 0:
             raise RuntimeError(tail or "ffmpeg failed")
+
+        elapsed = time.time() - start_time
+        out_size_mb = os.path.getsize(out_path) / (1024 * 1024)
+        speed_mb_s = out_size_mb / elapsed if elapsed > 0 else 0.0
+        print(
+            f"[DEBUG :: {start_stamp}] Processed to: {os.path.basename(out_path)} || {elapsed:.1f}s || {speed_mb_s:.1f} MB/s"
+        )
 
         self.ui(row.set_progress, 100)
         self.ui(row.set_status, "Finished", "#1a9e50")
