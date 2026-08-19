@@ -386,11 +386,13 @@ class App:
         if proc.returncode != 0:
             raise RuntimeError(tail or "ffmpeg failed")
 
-        elapsed = time.time() - start_time
+        end_time = time.time()
+        end_stamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        elapsed = end_time - start_time
         out_size_mb = os.path.getsize(out_path) / (1024 * 1024)
         speed_mb_s = out_size_mb / elapsed if elapsed > 0 else 0.0
         print(
-            f"[DEBUG :: {start_stamp}] Processed to: {os.path.basename(out_path)} || {elapsed:.1f}s || {speed_mb_s:.1f} MB/s"
+            f"[DEBUG :: {end_stamp}] Processed to: {os.path.basename(out_path)} || {elapsed:.1f}s || {speed_mb_s:.1f} MB/s"
         )
 
         self.ui(row.set_progress, 100)

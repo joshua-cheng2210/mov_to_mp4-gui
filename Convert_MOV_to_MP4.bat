@@ -11,6 +11,7 @@ SET logfile=mov_to_mp4.log
 
 if "%~1"=="__main__" goto :main
 echo Logging to %logfile%
+if exist "%logfile%" powershell -NoProfile -Command "if ((Get-Item '%logfile%').Length -gt 1MB) { (Get-Content '%logfile%' -Tail 2000) | Set-Content '%logfile%' }"
 cmd /c "%~f0" __main__ 2>&1 | powershell -NoProfile -Command "$input | Tee-Object -FilePath '%logfile%' -Append"
 @REM cmd /c "%~f0" __main__ 2>&1 | powershell -NoProfile -Command "$input >> '%logfile%'"
 exit /b %errorlevel%
@@ -19,13 +20,13 @@ exit /b %errorlevel%
 echo ============================================================
 echo python %0 %1 
 echo Run started: %date% %time%
-echo ============================================================
+echo -------------------------------------------------------------
 
 echo Checking dependencies (first run may take a minute for installing packages)...
 python -m pip install --quiet --disable-pip-version-check imageio-ffmpeg
 
 echo Launching converter...
-python "%~dp0mov_to_mp4.py"
+python -u "%~dp0mov_to_mp4.py"
 
 if errorlevel 1 (
     echo.
